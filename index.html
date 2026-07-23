@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Password Security Analyzer</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="container">
+
+    <header class="header">
+      <h1>Password Security Analyzer</h1>
+      <p>Evaluate password strength and security best practices.</p>
+    </header>
+
+    <!-- ANALYZER CARD -->
+    <section class="card">
+      <label for="password-input" class="label">Password</label>
+
+      <div class="password-field">
+        <input
+          type="password"
+          id="password-input"
+          placeholder="Enter a password to analyze"
+          autocomplete="off"
+        />
+        <button id="toggle-visibility" class="btn-ghost" type="button">Show</button>
+      </div>
+
+      <div class="meta-row">
+        <span id="char-count">0 characters</span>
+        <span id="security-score">Score: 0/100</span>
+      </div>
+
+      <!-- Strength bar -->
+      <div class="strength-wrap">
+        <div class="strength-label-row">
+          <span>Strength</span>
+          <span id="strength-text">—</span>
+        </div>
+        <div class="strength-bar-bg">
+          <div id="strength-bar-fill" class="strength-bar-fill"></div>
+        </div>
+      </div>
+
+      <!-- Stats grid -->
+      <div class="stats-grid">
+        <div class="stat-box">
+          <span class="stat-label">Entropy</span>
+          <span id="entropy-value" class="stat-value">0 bits</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">Estimated Crack Time</span>
+          <span id="crack-time-value" class="stat-value">Instantly</span>
+        </div>
+      </div>
+
+      <!-- Security Report -->
+      <div class="report">
+        <h2 class="section-title">Security Report</h2>
+        <ul id="report-list" class="report-list">
+          <li data-rule="length">Minimum length (12+) satisfied</li>
+          <li data-rule="uppercase">Contains uppercase letters</li>
+          <li data-rule="lowercase">Contains lowercase letters</li>
+          <li data-rule="number">Contains numbers</li>
+          <li data-rule="symbol">Contains special characters</li>
+          <li data-rule="common">Not a commonly used password</li>
+          <li data-rule="repeat">No excessive repeated characters</li>
+        </ul>
+      </div>
+
+      <!-- Suggestions -->
+      <div class="suggestions">
+        <h2 class="section-title">Suggestions</h2>
+        <ul id="suggestions-list" class="suggestions-list">
+          <li>Start typing to see personalized suggestions.</li>
+        </ul>
+      </div>
+
+      <!-- Breach check -->
+      <div class="breach-section">
+        <button id="breach-check-btn" class="btn-secondary" type="button">
+          Check Have I Been Pwned Database
+        </button>
+        <p id="breach-result" class="breach-result"></p>
+        <p class="breach-note">
+          Uses k-anonymity: only the first 5 characters of your password's SHA-1 hash
+          are sent. Your full password never leaves your device.
+        </p>
+      </div>
+    </section>
+
+    <!-- GENERATOR CARD -->
+    <section class="card">
+      <h2 class="section-title">Generate Secure Password</h2>
+
+      <div class="generated-output">
+        <input type="text" id="generated-password" readonly placeholder="Your generated password will appear here" />
+        <button id="copy-btn" class="btn-ghost" type="button">Copy</button>
+      </div>
+
+      <div class="option-row">
+        <label for="length-slider">Length</label>
+        <span id="length-value">16</span>
+      </div>
+      <input type="range" id="length-slider" min="6" max="64" value="16" />
+
+      <div class="checkbox-grid">
+        <label class="checkbox-item">
+          <input type="checkbox" id="opt-uppercase" checked />
+          Include Uppercase
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="opt-lowercase" checked />
+          Include Lowercase
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="opt-numbers" checked />
+          Include Numbers
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="opt-symbols" checked />
+          Include Symbols
+        </label>
+      </div>
+
+      <button id="generate-btn" class="btn-primary" type="button">Generate</button>
+    </section>
+
+    <footer class="footer">
+      <p>All analysis runs locally in your browser. Nothing is stored or transmitted except the optional breach check.</p>
+    </footer>
+
+  </div>
+
+  <script src="common-passwords.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
