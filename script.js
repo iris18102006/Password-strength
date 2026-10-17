@@ -261,10 +261,10 @@ async function checkPwned(password) {
     }
 
     if (matchCount > 0) {
-      breachResult.textContent = `⚠ This password has appeared in ${matchCount.toLocaleString()} known data breaches. Do not use it.`;
+      breachResult.textContent = `This password has appeared in ${matchCount.toLocaleString()} known data breaches. Do not use it.`;
       breachResult.className = "breach-result breached";
     } else {
-      breachResult.textContent = "✓ This password was not found in any known breach database.";
+      breachResult.textContent = "This password was not found in any known breach database.";
       breachResult.className = "breach-result safe";
     }
   } catch (err) {
