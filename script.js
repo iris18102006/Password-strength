@@ -285,26 +285,42 @@ const CHAR_SETS = {
   symbols: "!@#$%^&*()_+-=[]{}",
 };
 
+// Unbiased random int in [0, max) using rejection sampling,
+// so "% pool.length" can't favor the first few characters.
+function secureRandomInt(max) {
+  const limit = Math.floor(0x100000000 / max) * max;
+  const buf = new Uint32Array(1);
+  do {
+    crypto.getRandomValues(buf);
+  } while (buf[0] >= limit);
+  return buf[0] % max;
+}
+
 function generatePassword(length, options) {
-  let pool = "";
-  if (options.uppercase) pool += CHAR_SETS.uppercase;
-  if (options.lowercase) pool += CHAR_SETS.lowercase;
-  if (options.numbers) pool += CHAR_SETS.numbers;
-  if (options.symbols) pool += CHAR_SETS.symbols;
+  const selected = Object.keys(CHAR_SETS).filter((k) => options[k]);
+  // fallback so we never generate an empty password
+  if (selected.length === 0) selected.push("lowercase");
 
-  if (pool.length === 0) {
-    // fallback so we never generate an empty password
-    pool = CHAR_SETS.lowercase;
+  const pool = selected.map((k) => CHAR_SETS[k]).join("");
+
+  // one guaranteed char from each selected set (if length allows)...
+  const chars = [];
+  selected.slice(0, length).forEach((k) => {
+    chars.push(CHAR_SETS[k][secureRandomInt(CHAR_SETS[k].length)]);
+  });
+
+  // ...rest from the full pool
+  while (chars.length < length) {
+    chars.push(pool[secureRandomInt(pool.length)]);
   }
 
-  const array = new Uint32Array(length);
-  crypto.getRandomValues(array);
-
-  let password = "";
-  for (let i = 0; i < length; i++) {
-    password += pool[array[i] % pool.length];
+  // Fisher-Yates shuffle so the guaranteed chars aren't always up front
+  for (let i = chars.length - 1; i > 0; i--) {
+    const j = secureRandomInt(i + 1);
+    [chars[i], chars[j]] = [chars[j], chars[i]];
   }
-  return password;
+
+  return chars.join("");
 }
 
 lengthSlider.addEventListener("input", () => {
