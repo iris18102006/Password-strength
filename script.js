@@ -90,17 +90,12 @@ function evaluateRules(password) {
 
 // ============================================================
 // SECURITY SCORE (0–100)
+// Tweak SCORE_CONFIG to change how much entropy vs. rules matter.
 // ============================================================
-function calculateScore(password, rules, entropy) {
-  if (password.length === 0) return 0;
-
-  let score = 0;
-
-  // Entropy contributes up to 60 points
-  score += Math.min(60, Math.round((entropy / 100) * 60));
-
-  // Rule satisfaction contributes up to 40 points
-  const ruleWeights = {
+const SCORE_CONFIG = {
+  entropyMaxPoints: 60,   // max points from entropy
+  entropyCapBits: 100,    // entropy at which you get the full amount
+  ruleWeights: {          // rules add up to 40 points
     length: 8,
     uppercase: 6,
     lowercase: 6,
@@ -108,11 +103,27 @@ function calculateScore(password, rules, entropy) {
     symbol: 8,
     common: 4,
     repeat: 2,
-  };
+  },
+  // a common/breached-style password can never score above this
+  commonPasswordCap: 25,
+};
 
-  Object.keys(ruleWeights).forEach((key) => {
-    if (rules[key]) score += ruleWeights[key];
+function calculateScore(password, rules, entropy) {
+  if (password.length === 0) return 0;
+
+  let score = 0;
+
+  score += Math.min(
+    SCORE_CONFIG.entropyMaxPoints,
+    Math.round((entropy / SCORE_CONFIG.entropyCapBits) * SCORE_CONFIG.entropyMaxPoints)
+  );
+
+  Object.keys(SCORE_CONFIG.ruleWeights).forEach((key) => {
+    if (rules[key]) score += SCORE_CONFIG.ruleWeights[key];
   });
+
+  // Entropy math can't tell "Password1!" is trash, so cap it
+  if (!rules.common) score = Math.min(score, SCORE_CONFIG.commonPasswordCap);
 
   return Math.max(0, Math.min(100, score));
 }
