@@ -10,12 +10,16 @@ generator — built with vanilla HTML, CSS, and JavaScript (no frameworks).
 - **Crack time estimation** (instant → longer than the age of the universe)
 - **Security report** checking length, character variety, common-password
   usage, and repeated/predictable patterns
+- **Smart common-password detection** against a ~10,000-entry wordlist that
+  also catches leetspeak swaps (`p@ssw0rd`) and base word + junk suffixes
+  (`Password1!`, `welcome2024`)
 - **Live, personalized suggestions** as you type
 - **Have I Been Pwned integration** using the official k-anonymity API — only
   the first 5 characters of your password's SHA-1 hash are ever sent over the
   network, so your real password never leaves the browser
 - **Secure password generator** using `crypto.getRandomValues` (not
-  `Math.random`), with adjustable length and character set options
+  `Math.random`) with rejection sampling (no modulo bias), adjustable length,
+  and a guarantee that every selected character type actually appears
 - **Copy to clipboard** and **show/hide password** toggle
 - Clean, GitHub/Vercel-inspired UI — no gradients, no glow effects, no emojis
 
@@ -23,10 +27,12 @@ generator — built with vanilla HTML, CSS, and JavaScript (no frameworks).
 
 ```
 Password-Strength-Analyzer/
-├── index.html          # Markup / layout
-├── style.css            # Theme and styling
+├── index.html            # Markup / layout
+├── style.css             # Theme and styling
 ├── script.js             # Core logic (entropy, scoring, generator, HIBP check)
-├── common-passwords.js   # Small local wordlist for instant common-password detection
+├── common-passwords.js   # ~10k common-password list + leetspeak/suffix matching
+├── LICENSE
+├── .gitignore
 └── README.md
 ```
 
@@ -59,10 +65,23 @@ a perfect model of real-world guessability (it doesn't know that
 exactly why the common-password list and repeat-pattern checks exist
 alongside it.
 
+## How scoring works
+
+The 0–100 score is entropy (up to 60 points) plus rule compliance (up to 40
+points). If the password is on the common list, the score is capped at 25,
+because the entropy formula can't tell `Password1!` is a terrible password.
+All the numbers live in `SCORE_CONFIG` at the top of the scoring section in
+`script.js`, so they're easy to tune.
+
 ## Notes for extending this project
 
-- Swap the local common-password list for a larger wordlist (e.g. the
-  top 10,000 or 100,000 most common passwords) if you want stronger detection.
-- The scoring weights in `calculateScore()` are tunable — adjust them to
-  change how heavily entropy vs. rule-compliance affects the final score.
+- Want even stronger detection? Swap in a bigger wordlist (100k+) in
+  `common-passwords.js`. It's a `Set`, so lookups stay instant.
+- Tweak `SCORE_CONFIG` in `script.js` to change how heavily entropy vs.
+  rule-compliance affects the final score.
 - Everything runs client-side except the optional HIBP breach check.
+
+## Credits
+
+Common-password list derived from
+[SecLists](https://github.com/danielmiessler/SecLists) (`10k-most-common`).
